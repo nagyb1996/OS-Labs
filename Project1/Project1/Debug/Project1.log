@@ -1,0 +1,5 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(391,5): warning MSB8028: The intermediate directory (Debug\) contains files shared from another project (Project1.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  Step1.c
+c:\users\nagyb\source\repos\project1\project1\step1.c(17): warning C4013: 'time' undefined; assuming extern returning int
+c:\users\nagyb\source\repos\project1\project1\step1.c(16): warning C4047: 'initializing': 'int' differs in levels of indirection from 'void *'
+  Project1.vcxproj -> C:\Users\nagyb\source\repos\Project1\Debug\Lab 1.exe
