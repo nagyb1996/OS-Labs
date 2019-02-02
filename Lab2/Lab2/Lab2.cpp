@@ -12,13 +12,43 @@
 
 using namespace std;
 
+vector<string> split(string content, string delim);
+
+void instruction_parser(string instruct, map<string, string> dic);
 
 
-string instruction_parser (string initalInstruc);
 
-string instruction_parser (string initalInstruc) {
+void instruction_parser(string instruct, map<string, string> dic) {
 
-	string test = "";
+	vector<string> instructVector;
+
+	instructVector.push_back(instruct);
+
+	if (instruct.find(";") != string::npos) {
+
+		instructVector = split(instruct, ";");
+
+	}
+
+
+	for (std::size_t i = 0; i < instructVector.size(); i++) {
+
+		string node;
+
+		map<string, string>::iterator it1;
+		for (it1 = dic.begin(); it1 != dic.end(); ++it1) {
+			if (instructVector[i].find(it1->first) != string::npos) {
+				node = it1->first;
+			}
+		}
+
+
+
+
+
+	}
+
+
 
 	/*
 	"Ready"
@@ -33,17 +63,15 @@ string instruction_parser (string initalInstruc) {
 	"expires"
 	"is dispatched"
 	*/
-	
 
 
-	return test;
 }
 
-vector<string> split (string content, string delim);
 
-vector<string> split (string content, string delim) {
+
+vector<string> split(string content, string delim) {
 	vector<string> inits;
-	
+
 	int position = 0;
 	string token;
 
@@ -89,16 +117,27 @@ int main() {
 	//parsing inital values
 	string initLine = in[0];
 	vector<string> initLineArgs = split(initLine, " ");
-	for (int i = 0; i != initLineArgs.size(); i+=2) {
-		
+
+	for (int i = 0; i != initLineArgs.size(); i += 2) {
+
+		//add i as key and i+1 as value to dictioanry
+
+		string key = initLineArgs[i];
+
+		string value = initLineArgs[i + 1];
+
+		stateMap.insert(pair<string, string>(key, value));
+
 	}
 
-	
-	/*if (initLine.find(";") != string::npos) {
+	map<string, string>::iterator it1;
 
-	}
-	*/
+	for (it1 = stateMap.begin(); it1 != stateMap.end(); ++it1)
+		cout << it1->first << "->" << it1->second << endl;
 
-	
+
+
+
+
 
 }
