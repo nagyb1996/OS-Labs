@@ -13,13 +13,15 @@
 
 using namespace std;
 
+
+
 vector<string> split(string content, string delim); //declare split, used to split string based on arguement defined delim
+vector<string> instruction_parser(string instruct); //declare instruction_parser, parses instructions and updates map
+bool contains(vector<string> vec, string content); // declare contains, that checks if a vector contains an element
 
-void instruction_parser(string instruct, map<string, string> dic); //declare instruction_parser, parses instructions and updates map
 
-
-const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "created", "expires" };
-
+const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };
+map<string, string> stateMap;
 
 /*
 dispatched -> running
@@ -30,63 +32,85 @@ requests -> blocked
 
 
 
-void instruction_parser(string instruct, map<string, string> dic) {
+vector<string> instruction_parser(string instruct) {
 
 	vector<string> instructVector;			//new string vector, holds supplied instructions
+	vector<string> process;                 //accumulate the list of modified processes
 
 	instructVector.push_back(instruct);		//add instruction to vector, if there is more than instruction, if statement will catch and split it
 
-	if (instruct.find(";") != string::npos) {	//splits line of mulitple instructions into multiple strings
+	if (instruct.find(";") != string::npos) { //if there are multiple instructions on one line, split them up
 
 		instructVector = split(instruct, ";");
 
 	}
 
-
-	for (std::size_t i = 0; i < instructVector.size(); i++) { 
-
-		string process;
+	// for each instruction, process it
+	for (std::size_t i = 0; i < instructVector.size(); i++) {
 		string state;
 
+		// get the correct process from the instruction
 		map<string, string>::iterator it1;
-		for (it1 = dic.begin(); it1 != dic.end(); ++it1) { //find the key that the instruction will apply to
+		for (it1 = stateMap.begin(); it1 != stateMap.end(); ++it1) { //find the process that the instruction will apply to
 			if (instructVector[i].find(it1->first) != string::npos) {
-				process = it1->first;
+				process.push_back(it1->first); //add it to the accumulated list of modified processes
 			}
 		}
 
-		for (int j = 0; j < 8; j++) {
-			if (instructVector[i].find(instructionCommands[j]) != string::npos) {
-				state = instructionCommands[j];
+		// get the correct instruction, and set the state accordingly
+		for (int j = 0; j < 7; j++) {
+			if (instructVector[i].find(instructionCommands[j]) != string::npos) { // if we found the right instruction
+
+				switch (j) {
+					case 0: //dispatched -> running
+						state = "Running";
+						stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					case 1: //request -> blocked
+						state = "Blocked";
+						stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					case 2: //swapped in -> ready
+						state = "Ready";
+						stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					case 3: //swapped out -> blocked/suspend
+						state = "Blocked/Suspend";
+						stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					case 4: //interrupt -> ready
+						state = "Ready";
+						stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					case 5: //terminated -> DELETE FROM MAP
+						stateMap.erase(process[i]); //mutate the global stateMap variable with updates
+						break;
+					case 6: //expires -> ready
+						state = "Ready";
+						stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+						break;
+				}
 			}
+
 		}
-
-		//update this later when we know logic
-		dic[process] = state;
-
 	}
-
-
-
-	/*
-	"Ready"
-	"Running"
-	"Blocked"
-	"New"
-	"Blocked/Suspend"
-
-	"At time "
-	"requests"
-	"Time slice"
-	"expires"
-	"is dispatched"
-	*/
-
-
+	return process; //return the accumulated list of modified processes
 }
 
 
+// Given a vector of strings, return if the vector contains the given string
+bool contains(vector<string> vec, string content) {
+	bool result = false;
+	for (int k = 0; k < vec.size(); k++) {
+		if (vec[k] == content) {
+			result = true;
+			break;
+		}
+	}
+	return result;
+}
 
+// Given a string content, and a string delimiter, split the string into a vector, and remove delimters
 vector<string> split(string content, string delim) {
 	vector<string> inits;
 
@@ -100,11 +124,6 @@ vector<string> split(string content, string delim) {
 	}
 	inits.push_back(content); //Add whatever is left, with no delimeters, fixes issue of dropping final state
 
-	//print debugging tool
-	// for (int i = 0; i != inits.size(); i++) {
-	//	cout << inits[i] << endl;
-	//}
-
 	return inits;
 }
 
@@ -117,46 +136,57 @@ int main() {
 	ifstream input("input1.txt");
 
 	int count = 0;
-	string in[50];
-	string data;
-	map<string, string> stateMap;
+	vector<string> in;
+	string data; 
 
 	if (input.good())
 	{
 		while (getline(input, data)) //while there are lines to read, read them
 		{
-			in[count] = data;		//store line in index postion counter
-			printf("%s\n", in[count].c_str());
+			in.push_back(data);		//store line
 			count++;				//increase counter
 		}
 		count = 0; //reset counter
 	}
 	input.close();
 
-	//parsing inital values
-	string initLine = in[0];
-	vector<string> initLineArgs = split(initLine, " ");
+	//print initial state
+	cout << in[0] << endl;
 
+	//parse and split initialization values
+	vector<string> initLineArgs = split(in[0], " ");
+
+	//Assign each process (key) with its corresponding state (value) in stateMap
 	for (int i = 0; i != initLineArgs.size(); i += 2) {
-
 		//add i as key and i+1 as value to dictioanry
-
 		string key = initLineArgs[i];
-
 		string value = initLineArgs[i + 1];
-
 		stateMap.insert(pair<string, string>(key, value));
-
 	}
 
 	//send each individual line to the line parser
+	for (int j = 1; j < in.size(); j++) {
+		cout << in[j] << endl; //print the original line
+		vector<string> processes = instruction_parser(in[j]); //returns the modified processes from that line
+
+		//print map
+		map<string, string>::iterator it1;
+		for (it1 = stateMap.begin(); it1 != stateMap.end(); ++it1) { //for each state in the map
+			if (contains(processes, it1->first)) { // if it was one of the modified processes, add a *
+				cout << it1->first << "->" << it1->second << "*" << endl;
+			}
+			else {
+				cout << it1->first << "->" << it1->second << endl;
+			}
+		}
+	}
 
 
-	map<string, string>::iterator it1;
+	//map<string, string>::iterator it1;
 	//map print debugging tool
-	for (it1 = stateMap.begin(); it1 != stateMap.end(); ++it1) 
-		cout << it1->first << "->" << it1->second << endl;
-
+	//for (it1 = stateMap.begin(); it1 != stateMap.end(); ++it1) {
+	//	cout << it1->first << "->" << it1->second << endl;
+	//}
 
 
 
