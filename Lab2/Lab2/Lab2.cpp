@@ -55,7 +55,7 @@ vector<string> instruction_parserTwo(string instruct) {
 		// get the correct instruction, and set the state accordingly
 		for (int j = 0; j < 7; j++) {
 			if (instructVectorTwo[i].find(instructionCommands[j]) != string::npos) { // if we found the right instruction
-
+				string process = processTwo[i];
 				switch (j) {
 				case 0: //dispatched -> running
 					state = "Running";
@@ -66,17 +66,41 @@ vector<string> instruction_parserTwo(string instruct) {
 					stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
 					break;
 				case 2: //swapped in -> ready
-					state = "Ready";
-					stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-					break;
+					if (stateMapTwo[process] == "Blocked/Suspend") {
+						state = "Blocked";
+						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					}
+					else {
+						state = "Ready";
+						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					}
+					
 				case 3: //swapped out -> blocked/suspend
-					state = "Blocked/Suspend";
-					stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-					break;
-				case 4: //interrupt -> ready
-					state = "Ready";
-					stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-					break;
+					if (stateMapTwo[process] == "Blocked") {
+						state = "Blocked/Suspend";
+						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					}
+					else if (stateMapTwo[process] == "Ready" || stateMapTwo[process] == "Running") {
+						state = "Ready/Suspend";
+						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					}
+
+				case 4: //interrupt -> ready OR Ready/Suspend
+					if (stateMapTwo[process] == "Blocked/Suspend") {
+						state = "Ready/Suspend";
+						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					}
+					else {
+						state = "Ready";
+						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
+						break;
+					}
+
 				case 5: //terminated -> DELETE FROM MAP
 					stateMapTwo.erase(processTwo[i]); //mutate the global stateMap variable with updates
 					break;
@@ -112,7 +136,7 @@ vector<string> instruction_parser(string instruct) {
 
 		// get the correct process from the instruction
 		map<string, string>::iterator it1;
-		for (it1 = stateMap.begin(); it1 != stateMap.end(); ++it1) { //find the process that the instruction will apply to
+		for (it1 = stateMap.begin(); it1 != stateMap.end(); it1++) { //find the process that the instruction will apply to
 			if (instructVector[i].find(it1->first) != string::npos) {
 				process.push_back(it1->first); //add it to the accumulated list of modified processes
 			}
@@ -121,7 +145,7 @@ vector<string> instruction_parser(string instruct) {
 		// get the correct instruction, and set the state accordingly
 		for (int j = 0; j < 7; j++) {
 			if (instructVector[i].find(instructionCommands[j]) != string::npos) { // if we found the right instruction
-
+				string Currentprocess = process[i];
 				switch (j) {
 				case 0: //dispatched -> running
 					state = "Running";
@@ -132,15 +156,30 @@ vector<string> instruction_parser(string instruct) {
 					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
 					break;
 				case 2: //swapped in -> ready
-					state = "Ready";
+					if (stateMap[Currentprocess] == "Blocked/Suspend") {
+						state = "Blocked";
+					}
+					else {
+						state = "Ready";
+					}
 					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
 					break;
-				case 3: //swapped out -> blocked/suspend
-					state = "Blocked/Suspend";
+				case 3: //suspend occurs (swapped out): blocked -> blocked/suspend, Ready -> Ready/suspend, Running -> Ready/Suspend
+					if (stateMap[Currentprocess] == "Blocked") {
+						state = "Blocked/Suspend";
+					}
+					else if(stateMap[Currentprocess] == "Ready" || stateMap[Currentprocess] == "Running") {
+						state = "Ready/Suspend";
+					}
 					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
 					break;
 				case 4: //interrupt -> ready
-					state = "Ready";
+					if (stateMap[Currentprocess] == "Blocked/Suspend") {
+						state = "Ready/Suspend";
+					}
+					else {
+						state = "Ready";
+					}					
 					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
 					break;
 				case 5: //terminated -> DELETE FROM MAP
@@ -233,7 +272,7 @@ int main() {
 
 		//print map
 		map<string, string>::iterator it1;
-		for (it1 = stateMap.begin(); it1 != stateMap.end(); ++it1) { //for each state in the map
+		for (it1 = stateMap.begin(); it1 != stateMap.end(); it1++) { //for each state in the map
 			if (contains(processes, it1->first)) { // if it was one of the modified processes, add a *
 				cout << it1->first << "->" << it1->second << "*" << endl;
 			}
