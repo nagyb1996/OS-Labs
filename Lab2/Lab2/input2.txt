@@ -1,9 +1,9 @@
-1 Ready 2 Ready 5 Running 6 Blocked 7 New 9 Ready 11 Blocked 12 Ready 15 Blocked 20 Ready
-At time 5:  Time slice for 5 expires; 9 is dispatched.
-At time 15: 9 requests the disk; 1 is dispatched; 15 is swapped out; 20 is swapped out.
-At time 18: An interrupt occurs for 6; 11 is swapped out.
-At time 20: An interrupt occurs for 11; 15 is swapped in.
-At time 24: 1 requests the printer; 6 is dispatched.
-At time 28: Time slice for 6 expires; 2 is dispatched.
-At time 33: 2 is terminated; An interrupt occured for 9.
-At time 36: 11 is swapped in; 5 is terminated; 6 is dispatched.
+P1 Ready P2 Ready P5 Running P6 Blocked P7 New P9 Ready P11 Blocked P12 Ready P15 Blocked P20 Ready
+At time 5:  Time slice for P5 expires; P9 is dispatched.
+At time 15: P9 requests the disk; P1 is dispatched; P15 is swapped out; P20 is swapped out.
+At time 18: An interrupt occurs for P6; P11 is swapped out.
+At time 20: An interrupt occurs for P11; P15 is swapped in.
+At time 24: P1 requests the printer; P6 is dispatched.
+At time 28: Time slice for P6 expires; P2 is dispatched.
+At time 33: P2 is terminated; An interrupt occured for P9.
+At time 36: P11 is swapped in; P5 is terminated; P6 is dispatched.

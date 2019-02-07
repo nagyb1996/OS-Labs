@@ -9,118 +9,72 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <array>
+//#include <array>
+//#include <algorithm>
+
+
 
 using namespace std;
 
+struct CustomOrder {
+	bool operator()(const std::string& a, const std::string& b) const {
+		string aLessP = a;
+		string bLessP = b;
 
+		aLessP = aLessP.erase(0, 1);
+
+		bLessP = bLessP.erase(0, 1);
+
+		return stoi(aLessP) < stoi(bLessP);
+	}
+};
 
 vector<string> split(string content, string delim); //declare split, used to split string based on arguement defined delim
 vector<string> instruction_parser(string instruct); //declare instruction_parser, parses instructions and updates map
-vector<string> instruction_parserTwo(string instruct); //declare instruction_parser, parses instructions and updates map
 bool contains(vector<string> vec, string content); // declare contains, that checks if a vector contains an element
 
 
 const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };
-map<string, string> stateMap;
-map<string, string> stateMapTwo;
-
-
-
-vector<string> instruction_parserTwo(string instruct) {
-
-	vector<string> instructVectorTwo;			//new string vector, holds supplied instructions
-	vector<string> processTwo;                 //accumulate the list of modified processes
-
-	instructVectorTwo.push_back(instruct);		//add instruction to vector, if there is more than instruction, if statement will catch and split it
-
-	if (instruct.find(";") != string::npos) { //if there are multiple instructions on one line, split them up
-
-		instructVectorTwo = split(instruct, ";");
-
-	}
-
-	// for each instruction, process it
-	for (std::size_t i = 0; i < instructVectorTwo.size(); i++) {
-		string state;
-
-		// get the correct process from the instruction
-		map<string, string>::iterator it2;
-		for (it2 = stateMapTwo.begin(); it2 != stateMapTwo.end(); ++it2) { //find the process that the instruction will apply to
-			if (instructVectorTwo[i].find(it2->first) != string::npos) {
-				processTwo.push_back(it2->first); //add it to the accumulated list of modified processes
-			}
-		}
-
-		// get the correct instruction, and set the state accordingly
-		for (int j = 0; j < 7; j++) {
-			if (instructVectorTwo[i].find(instructionCommands[j]) != string::npos) { // if we found the right instruction
-				string process = processTwo[i];
-				switch (j) {
-				case 0: //dispatched -> running
-					state = "Running";
-					stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-					break;
-				case 1: //request -> blocked
-					state = "Blocked";
-					stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-					break;
-				case 2: //swapped in -> ready
-					if (stateMapTwo[process] == "Blocked/Suspend") {
-						state = "Blocked";
-						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-						break;
-					}
-					else {
-						state = "Ready";
-						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-						break;
-					}
-					
-				case 3: //swapped out -> blocked/suspend
-					if (stateMapTwo[process] == "Blocked") {
-						state = "Blocked/Suspend";
-						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-						break;
-					}
-					else if (stateMapTwo[process] == "Ready" || stateMapTwo[process] == "Running") {
-						state = "Ready/Suspend";
-						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-						break;
-					}
-
-				case 4: //interrupt -> ready OR Ready/Suspend
-					if (stateMapTwo[process] == "Blocked/Suspend") {
-						state = "Ready/Suspend";
-						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-						break;
-					}
-					else {
-						state = "Ready";
-						stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-						break;
-					}
-
-				case 5: //terminated -> DELETE FROM MAP
-					stateMapTwo.erase(processTwo[i]); //mutate the global stateMap variable with updates
-					break;
-				case 6: //expires -> ready
-					state = "Ready";
-					stateMapTwo[processTwo[i]] = state; //mutate the global stateMap variable with updates
-					break;
-				}
-			}
-
-		}
-	}
-	return processTwo; //return the accumulated list of modified processes
-}
-
+map<string, string, CustomOrder> stateMap;
 
 vector<string> instruction_parser(string instruct) {
-
+	
 	vector<string> instructVector = {};			//new string vector, holds supplied instructions
-	vector<string> process = {};                 //accumulate the list of modified processes
+	vector<string> processes = {};                 //accumulate the list of modified processes
+
+	vector<string> psToDelete = {};
+
+	int blockedCounter = 0;
+	// count how many processes are blocked
+	map<string, string>::iterator it3;
+	for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+		if (it3->second == "Blocked") {
+			blockedCounter++;
+		}
+	}
+
+	// If all processes are either blocked
+	if (blockedCounter == stateMap.size()) {
+		stateMap.begin()->second = "Blocked/Suspend"; // swap out the first one for Blocked/Suspend
+	}
+
+	// Do initial map state checks for special cases B)
+	map<string, string>::iterator it2;
+	for (it2 = stateMap.begin(); it2 != stateMap.end(); it2++) {
+		if (it2->second == "Exit") {
+			psToDelete.push_back(it2->first);
+		}
+		else if (it2->second == "New") {
+			stateMap[it2->first] = "Ready";
+			processes.push_back(it2->first);
+		}
+	}
+
+	for (int c = 0; c < psToDelete.size(); c++) {
+		stateMap.erase(psToDelete[c]);
+	}
+
+
 
 	instructVector.push_back(instruct);		//add instruction to vector, if there is more than instruction, if statement will catch and split it
 
@@ -131,70 +85,88 @@ vector<string> instruction_parser(string instruct) {
 	}
 
 	// for each instruction, process it
-	for (std::size_t i = 0; i < instructVector.size(); i++) {
-		string state;
-
+	for (int i = 0; i < instructVector.size(); i++) {
+		string state = ""; // The calculated state based on the previous state and the instruction
+		string process = ""; // The process this instruction contains
+		vector<string> parts = split(instructVector[i], " "); //The words of this instruction, split individually
+		
+		// Go through each word in this instruction, and remove extraneous spaces and periods
+		for (int m = 0; m < parts.size(); m++) {
+			if (parts[m].find(".") != string::npos) {
+				int location = parts[m].find(".");
+				parts[m] = parts[m].erase(location, 1);
+			}
+			if (parts[m].find(" ") != string::npos) {
+				int location = parts[m].find(" ");
+				parts[m] = parts[m].erase(location, 1);
+			}
+		}
 		// get the correct process from the instruction
 		map<string, string>::iterator it1;
 		for (it1 = stateMap.begin(); it1 != stateMap.end(); it1++) { //find the process that the instruction will apply to
-			if (instructVector[i].find(it1->first) != string::npos) {
-				process.push_back(it1->first); //add it to the accumulated list of modified processes
+			
+			for (int k = 0; k < parts.size(); k++) { // for each word in the instruction, see if that word is a process
+				if (parts[k] == it1->first) { // if the word is the process,
+					processes.push_back(it1->first); //add it to the accumulated list of modified processes
+					process = it1->first; //save it as the process whose state we will modify
+				}
 			}
+
 		}
 
 		// get the correct instruction, and set the state accordingly
 		for (int j = 0; j < 7; j++) {
 			if (instructVector[i].find(instructionCommands[j]) != string::npos) { // if we found the right instruction
-				string Currentprocess = process[i];
 				switch (j) {
 				case 0: //dispatched -> running
 					state = "Running";
-					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
 				case 1: //request -> blocked
 					state = "Blocked";
-					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
 				case 2: //swapped in -> ready
-					if (stateMap[Currentprocess] == "Blocked/Suspend") {
+					if (stateMap[process] == "Blocked/Suspend") {
 						state = "Blocked";
 					}
 					else {
 						state = "Ready";
 					}
-					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
 				case 3: //suspend occurs (swapped out): blocked -> blocked/suspend, Ready -> Ready/suspend, Running -> Ready/Suspend
-					if (stateMap[Currentprocess] == "Blocked") {
+					if (stateMap[process] == "Blocked") {
 						state = "Blocked/Suspend";
 					}
-					else if(stateMap[Currentprocess] == "Ready" || stateMap[Currentprocess] == "Running") {
+					else if(stateMap[process] == "Ready" || stateMap[process] == "Running") {
 						state = "Ready/Suspend";
 					}
-					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
 				case 4: //interrupt -> ready
-					if (stateMap[Currentprocess] == "Blocked/Suspend") {
+					if (stateMap[process] == "Blocked/Suspend") {
 						state = "Ready/Suspend";
 					}
 					else {
 						state = "Ready";
 					}					
-					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
-				case 5: //terminated -> DELETE FROM MAP
-					stateMap.erase(process[i]); //mutate the global stateMap variable with updates
+				case 5: //terminated -> exit -> on next run DELETE FROM MAP
+					state = "Exit";
+					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
 				case 6: //expires -> ready
 					state = "Ready";
-					stateMap[process[i]] = state; //mutate the global stateMap variable with updates
+					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
 				}
 			}
 
 		}
 	}
-	return process; //return the accumulated list of modified processes
+	return processes; //return the accumulated list of modified processes
 }
 
 
@@ -229,6 +201,7 @@ vector<string> split(string content, string delim) {
 
 
 int main() {
+
 
 	printf("Simulation Begins \n");
 	printf("Reading Input 1 \n");
@@ -285,6 +258,7 @@ int main() {
 	printf("Simulation Ends \n");
 	printf("\n");
 
+	stateMap.clear(); // Clear out statemap for next input file
 
 	printf("Simulation Begins \n");
 	printf("Reading Input 2 \n");
@@ -318,17 +292,17 @@ int main() {
 		//add i as key and i+1 as value to dictioanry
 		string keyTwo = initLineArgsTwo[i];
 		string valueTwo = initLineArgsTwo[i + 1];
-		stateMapTwo.insert(pair<string, string>(keyTwo, valueTwo));
+		stateMap.insert(pair<string, string>(keyTwo, valueTwo));
 	}
 
 	//send each individual line to the line parser
 	for (int j = 1; j < inTwo.size(); j++) {
 		cout << inTwo[j] << endl; //print the original line
-		vector<string> processesTwo = instruction_parserTwo(inTwo[j]); //returns the modified processes from that line
+		vector<string> processesTwo = instruction_parser(inTwo[j]); //returns the modified processes from that line
 
 		//print map
 		map<string, string>::iterator it2;
-		for (it2 = stateMapTwo.begin(); it2 != stateMapTwo.end(); ++it2) { //for each state in the map
+		for (it2 = stateMap.begin(); it2 != stateMap.end(); ++it2) { //for each state in the map
 			if (contains(processesTwo, it2->first)) { // if it was one of the modified processes, add a *
 				cout << it2->first << "->" << it2->second << "*" << endl;
 			}
