@@ -6,4 +6,4 @@ At time 20: P13 requests the keyboard.
 At time 24: An interrupt occurred for P9; An interrupt occurred for P2.
 At time 28: P8 is dispatched; An interrupt occurred for P7.
 At time 33: An interrupt occurred for P1; P8 is terminated; P7 is dispatched.
-At time 37: Time slice expires for P7; An interrupt occurred for P10; P9 is dispatched.
+At time 37: Time slice for P7 expires; An interrupt occurred for P10; P9 is dispatched.

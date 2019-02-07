@@ -31,7 +31,7 @@ struct CustomOrder {
 vector<string> split(string content, string delim); //declare split, used to split string based on arguement defined delim
 vector<string> instruction_parser(string instruct); //declare instruction_parser, parses instructions and updates map
 bool contains(vector<string> vec, string content); // declare contains, that checks if a vector contains an element
-
+int fileNumber = 0;
 
 const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };
 map<string, string, CustomOrder> stateMap;
@@ -40,41 +40,99 @@ vector<string> instruction_parser(string instruct) {
 	
 	vector<string> instructVector = {};			//new string vector, holds supplied instructions
 	vector<string> processes = {};                 //accumulate the list of modified processes
-
 	vector<string> psToDelete = {};			//collect location of periods to delete
 
-	int blockedCounter = 0;
-	// count how many processes are blocked
-	map<string, string>::iterator it3;
-	for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
-		if (it3->second == "Blocked") {
-			blockedCounter++;
+	if (fileNumber == 3 || fileNumber == 4)
+	{	
+		int blockedCounter = 0;
+		int flagBlocked = 0;
+		int flagExit = 0;
+
+		// count how many processes are blocked
+		map<string, string>::iterator it3;
+		for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+			if (it3->second == "Blocked" || it3->second == "Blocked/Suspend" || it3->second == "New") {
+				blockedCounter++;
+			}
 		}
-	}
 
-	// If all processes are either blocked
-	if (blockedCounter == stateMap.size()) {
-		stateMap.begin()->second = "Blocked/Suspend"; // swap out the first one for Blocked/Suspend
-	}
+		// If all processes are either blocked ||blocked/suspend || new
+		if (blockedCounter == stateMap.size()) {
+			for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+				if (it3->second == "Blocked") {
+					stateMap[it3->first] = "Blocked/Suspend";
+					processes.push_back(it3->first);
+					break;
+				}
 
-	// Do initial map state checks for special cases B)
-	map<string, string>::iterator it2;
-	for (it2 = stateMap.begin(); it2 != stateMap.end(); it2++) {
-		if (it2->second == "Exit") {
-			psToDelete.push_back(it2->first);
+				
+			}
+
+			for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+				if (it3->second == "New") {
+					stateMap[it3->first] = "Ready";
+					processes.push_back(it3->first);
+					flagBlocked = 1;
+					break;
+				}
+				if (flagBlocked == 0) {
+					flagBlocked = 2;
+				}
+			}
+
+
 		}
-		else if (it2->second == "New") {
-			stateMap[it2->first] = "Ready";
-			processes.push_back(it2->first);
+
+		
+		// Do initial map state checks for exited process
+		//map<string, string>::iterator it2;
+		for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++ ){
+			if (it3->second == "Exit") {
+				psToDelete.push_back(it3->first);
+				for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+					if (it3->second == "New") {
+						stateMap[it3->first] = "Ready";
+						processes.push_back(it3->first);
+						flagExit = 1;
+						break;
+					}
+				}
+				if (flagExit == 0) {
+					flagExit = 2;
+				}
+			}
 		}
+
+		if (flagExit == 2) {
+			for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+				if (it3->second == "Ready/Suspend") {
+					stateMap[it3->first] = "Ready";
+					processes.push_back(it3->first);
+					flagExit = 0;
+					break;
+				}
+			}
+
+		}
+
+		if (flagExit == 2) {
+			for (it3= stateMap.begin(); it3 != stateMap.end(); it3++) {
+				if (it3->second == "Block/Suspend") {
+					stateMap[it3->first] = "Block";
+					processes.push_back(it3->first);
+					break;
+				}
+			}
+		}
+
+
+
+		//delete periods
+		for (int c = 0; c < psToDelete.size(); c++) {
+			stateMap.erase(psToDelete[c]);
+		}
+
 	}
-
-	//delete periods
-	for (int c = 0; c < psToDelete.size(); c++) {
-		stateMap.erase(psToDelete[c]);
-	}
-
-
 
 	instructVector.push_back(instruct);		//add instruction to vector, if there is more than instruction, if statement will catch and split it
 
@@ -208,6 +266,7 @@ int main() {
 
 	ifstream input("input1.txt");
 
+	fileNumber = 1;
 	int count = 0;
 	vector<string> in;
 	string data; 
@@ -265,6 +324,7 @@ int main() {
 
 	ifstream inputTwo("input2.txt");
 
+	fileNumber = 2;
 	int countTwo = 0;
 	vector<string> inTwo;
 	string dataTwo;
@@ -322,6 +382,7 @@ int main() {
 
 	ifstream inputThree("input3.txt");
 
+	fileNumber = 3;
 	int countThree = 0;
 	vector<string> inThree = {};
 	string dataThree = "";
@@ -379,6 +440,7 @@ int main() {
 
 	ifstream inputFour("input4.txt");
 
+	fileNumber = 4;
 	int countFour = 0;
 	vector<string> inFour;
 	string dataFour;

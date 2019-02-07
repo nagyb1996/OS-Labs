@@ -1,5 +1,5 @@
 ﻿  Lab2.cpp
-c:\users\nagyb\documents\github\os-labs\lab2\lab2\lab2.cpp(96): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\nagyb\documents\github\os-labs\lab2\lab2\lab2.cpp(100): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\nagyb\documents\github\os-labs\lab2\lab2\lab2.cpp(192): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nagyb\documents\github\os-labs\lab2\lab2\lab2.cpp(154): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nagyb\documents\github\os-labs\lab2\lab2\lab2.cpp(158): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nagyb\documents\github\os-labs\lab2\lab2\lab2.cpp(250): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
   Lab2.vcxproj -> C:\Users\nagyb\Documents\GitHub\OS-Labs\Lab2\x64\Debug\Lab2.exe
