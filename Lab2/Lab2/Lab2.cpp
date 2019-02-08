@@ -1,5 +1,3 @@
-// Lab2.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 
 #include "pch.h"
 #include "stdio.h"
@@ -9,8 +7,6 @@
 #include <string>
 #include <map>
 #include <vector>
-
-
 
 using namespace std;
 
@@ -31,17 +27,19 @@ struct CustomOrder {
 vector<string> split(string content, string delim); //declare split, used to split string based on arguement defined delim
 vector<string> instruction_parser(string instruct); //declare instruction_parser, parses instructions and updates map
 bool contains(vector<string> vec, string content); // declare contains, that checks if a vector contains an element
+void manipulate(vector<string> in); //method to call other methods so main isnt repetative
 int fileNumber = 0;
 
 const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };
 map<string, string, CustomOrder> stateMap;
 
 vector<string> instruction_parser(string instruct) {
-	
+
 	vector<string> instructVector = {};			//new string vector, holds supplied instructions
 	vector<string> processes = {};                 //accumulate the list of modified processes
-	vector<string> psToDelete = {};			//collect location of periods to delete
+	vector<string> psToDelete = {};			//vector to collect list of exiting processes for removal
 
+	//Checked map for an exiting processes, add them to vector for removal
 	map<string, string>::iterator it3;
 	for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
 		if (it3->second == "Exit") {
@@ -49,6 +47,7 @@ vector<string> instruction_parser(string instruct) {
 		}
 	}
 
+	//Check for special conditions, only run for input 3 and 4
 	if (fileNumber == 3 || fileNumber == 4)
 	{
 		int blockedCounter = 0;
@@ -88,7 +87,6 @@ vector<string> instruction_parser(string instruct) {
 					flagBlocked = 2;
 				}
 			}
-
 
 		}
 
@@ -148,8 +146,8 @@ vector<string> instruction_parser(string instruct) {
 
 
 	}
-		
-	//delete periods
+
+	//Delete exiting processes
 	for (int c = 0; c < psToDelete.size(); c++) {
 		stateMap.erase(psToDelete[c]);
 	}
@@ -168,7 +166,7 @@ vector<string> instruction_parser(string instruct) {
 		string state = ""; // The calculated state based on the previous state and the instruction
 		string process = ""; // The process this instruction contains
 		vector<string> parts = split(instructVector[i], " "); //The words of this instruction, split individually
-		
+
 		// Go through each word in this instruction, and remove extraneous spaces and periods
 		for (int m = 0; m < parts.size(); m++) {
 			if (parts[m].find(".") != string::npos) {
@@ -183,7 +181,7 @@ vector<string> instruction_parser(string instruct) {
 		// get the correct process from the instruction
 		map<string, string>::iterator it1;
 		for (it1 = stateMap.begin(); it1 != stateMap.end(); it1++) { //find the process that the instruction will apply to
-			
+
 			for (int k = 0; k < parts.size(); k++) { // for each word in the instruction, see if that word is a process
 				if (parts[k] == it1->first) { // if the word is the process,
 					processes.push_back(it1->first); //add it to the accumulated list of modified processes
@@ -218,7 +216,7 @@ vector<string> instruction_parser(string instruct) {
 					if (stateMap[process] == "Blocked") {
 						state = "Blocked/Suspend";
 					}
-					else if(stateMap[process] == "Ready" || stateMap[process] == "Running") {
+					else if (stateMap[process] == "Ready" || stateMap[process] == "Running") {
 						state = "Ready/Suspend";
 					}
 					stateMap[process] = state; //mutate the global stateMap variable with updates
@@ -229,7 +227,7 @@ vector<string> instruction_parser(string instruct) {
 					}
 					else {
 						state = "Ready";
-					}					
+					}
 					stateMap[process] = state; //mutate the global stateMap variable with updates
 					break;
 				case 5: //terminated -> exit -> on next run DELETE FROM MAP
@@ -278,30 +276,7 @@ vector<string> split(string content, string delim) {
 	return inits;
 }
 
-int main() {
-
-	printf("Simulation Begins \n");
-	printf("Reading Input 1 \n");
-	cout << "\n";
-	printf("Initial State \n");
-
-	ifstream input("input1.txt");
-
-	fileNumber = 1;
-	int count = 0;
-	vector<string> in;
-	string data; 
-
-	if (input.good())
-	{
-		while (getline(input, data)) //while there are lines to read, read them
-		{
-			in.push_back(data);		//store line
-			count++;				//increase counter
-		}
-		count = 0; //reset counter
-	}
-	input.close();
+void manipulate(vector<string> in) {
 
 	//print initial state
 	cout << in[0] << endl;
@@ -340,6 +315,34 @@ int main() {
 	printf("\n");
 
 	stateMap.clear(); // Clear out statemap for next input file
+}
+
+int main() {
+
+	printf("Simulation Begins \n");
+	printf("Reading Input 1 \n");
+	cout << "\n";
+	printf("Initial State \n");
+
+	ifstream input("input1.txt");
+
+	fileNumber = 1;
+	int count = 0;
+	vector<string> in;
+	string data;
+
+	if (input.good())
+	{
+		while (getline(input, data)) //while there are lines to read, read them
+		{
+			in.push_back(data);		//store line
+			count++;				//increase counter
+		}
+		count = 0; //reset counter
+	}
+	input.close();
+
+	manipulate(in);
 
 	printf("Simulation Begins \n");
 	printf("Reading Input 2 \n");
@@ -349,120 +352,47 @@ int main() {
 	ifstream inputTwo("input2.txt");
 
 	fileNumber = 2;
-	int countTwo = 0;
-	vector<string> inTwo;
-	string dataTwo;
+	data = {};
+	vector<string> in2;
 
 	if (inputTwo.good())
 	{
-		while (getline(inputTwo, dataTwo)) //while there are lines to read, read them
+		while (getline(inputTwo, data)) //while there are lines to read, read them
 		{
-			inTwo.push_back(dataTwo);		//store line
-			countTwo++;				//increase counter
+			in2.push_back(data);		//store line
+			count++;				//increase counter
 		}
-		countTwo = 0; //reset counter
+		count = 0; //reset counter
 	}
+
 	inputTwo.close();
 
-	//print initial state
-	cout << inTwo[0] << endl;
-	cout << "\n";
-
-	//parse and split initialization values
-	vector<string> initLineArgsTwo = split(inTwo[0], " ");
-
-	//Assign each process (key) with its corresponding state (value) in stateMap
-	for (int i = 0; i != initLineArgsTwo.size(); i += 2) {
-		//add i as key and i+1 as value to dictioanry
-		string keyTwo = initLineArgsTwo[i];
-		string valueTwo = initLineArgsTwo[i + 1];
-		stateMap.insert(pair<string, string>(keyTwo, valueTwo));
-	}
-
-	//send each individual line to the line parser
-	for (int j = 1; j < inTwo.size(); j++) {
-		cout << inTwo[j] << endl; //print the original line
-		vector<string> processesTwo = instruction_parser(inTwo[j]); //returns the modified processes from that line
-
-		//print map
-		map<string, string>::iterator it2;
-		for (it2 = stateMap.begin(); it2 != stateMap.end(); ++it2) { //for each state in the map
-			if (contains(processesTwo, it2->first)) { // if it was one of the modified processes, add a *
-				cout << it2->first << "->" << it2->second << "*" << endl;
-			}
-			else {
-				cout << it2->first << "->" << it2->second << endl;
-			}	
-		}
-		cout << "\n";
-	}
-
-	printf("Simulation Ends \n");
-	printf("\n");
-
-	stateMap.clear(); // Clear out statemap for next input file
+	manipulate(in2);
 
 	printf("Simulation Begins \n");
 	printf("Reading Input 3 \n");
 	cout << "\n";
-	printf("Initial State \n"); 
+	printf("Initial State \n");
 
 
 	ifstream inputThree("input3.txt");
 
 	fileNumber = 3;
-	int countThree = 0;
-	vector<string> inThree = {};
-	string dataThree = "";
+	data = {};
+	vector<string> in3;
 
 	if (inputThree.good())
 	{
-		while (getline(inputThree, dataThree)) //while there are lines to read, read them
+		while (getline(inputThree, data)) //while there are lines to read, read them
 		{
-			inThree.push_back(dataThree);		//store line
-			countThree++;				//increase counter
+			in3.push_back(data);		//store line
+			count++;				//increase counter
 		}
-		countThree = 0; //reset counter
+		count = 0; //reset counter
 	}
 	inputThree.close();
 
-	//print initial state
-	cout << inThree[0] << endl;
-	cout << "\n";
-
-	//parse and split initialization values
-	vector<string> initLineArgsThree = split(inThree[0], " ");
-
-	//Assign each process (key) with its corresponding state (value) in stateMap
-	for (int i = 0; i != initLineArgsThree.size(); i += 2) {
-		//add i as key and i+1 as value to dictioanry
-		string keyThree = initLineArgsThree[i];
-		string valueThree = initLineArgsThree[i + 1];
-		stateMap.insert(pair<string, string>(keyThree, valueThree));
-	}
-
-	//send each individual line to the line parser
-	for (int j = 1; j < inThree.size(); j++) {
-		cout << inThree[j] << endl; //print the original line
-		vector<string> processesThree = instruction_parser(inThree[j]); //returns the modified processes from that line
-
-		//print map
-		map<string, string>::iterator it3;
-		for (it3 = stateMap.begin(); it3 != stateMap.end(); ++it3) { //for each state in the map
-			if (contains(processesThree, it3->first)) { // if it was one of the modified processes, add a *
-				cout << it3->first << "->" << it3->second << "*" << endl;
-			}
-			else {
-				cout << it3->first << "->" << it3->second << endl;
-			}
-		}
-		cout << "\n";
-	}
-
-	printf("Simulation Ends \n");
-	printf("\n");
-	
-	stateMap.clear(); // Clear out statemap for next input file
+	manipulate(in3);
 
 	printf("Simulation Begins \n");
 	printf("Reading Input 4 \n");
@@ -472,55 +402,20 @@ int main() {
 	ifstream inputFour("input4.txt");
 
 	fileNumber = 4;
-	int countFour = 0;
-	vector<string> inFour;
-	string dataFour;
+	data = {};
+	vector<string> in4;
 
 	if (inputFour.good())
 	{
-		while (getline(inputFour, dataFour)) //while there are lines to read, read them
+		while (getline(inputFour, data)) //while there are lines to read, read them
 		{
-			inFour.push_back(dataFour);		//store line
-			countFour++;				//increase counter
+			in4.push_back(data);		//store line
+			count++;				//increase counter
 		}
-		countFour = 0; //reset counter
+		count = 0; //reset counter
 	}
 	inputFour.close();
 
-	//print initial state
-	cout << inFour[0] << endl;
-	cout << "\n";
-
-	//parse and split initialization values
-	vector<string> initLineArgsFour = split(inFour[0], " ");
-
-	//Assign each process (key) with its corresponding state (value) in stateMap
-	for (int i = 0; i != initLineArgsFour.size(); i += 2) {
-		//add i as key and i+1 as value to dictioanry
-		string keyFour = initLineArgsFour[i];
-		string valueFour = initLineArgsFour[i + 1];
-		stateMap.insert(pair<string, string>(keyFour, valueFour));
-	}
-
-	//send each individual line to the line parser
-	for (int j = 1; j < inFour.size(); j++) {
-		cout << inFour[j] << endl; //print the original line
-		vector<string> processesFour = instruction_parser(inFour[j]); //returns the modified processes from that line
-
-		//print map
-		map<string, string>::iterator it4;
-		for (it4 = stateMap.begin(); it4 != stateMap.end(); ++it4) { //for each state in the map
-			if (contains(processesFour, it4->first)) { // if it was one of the modified processes, add a *
-				cout << it4->first << "->" << it4->second << "*" << endl;
-			}
-			else {
-				cout << it4->first << "->" << it4->second << endl;
-			}
-		}
-		cout << "\n";
-	}
-
-	printf("Simulation Ends \n");
-	printf("\n");
+	manipulate(in4);
 
 }
