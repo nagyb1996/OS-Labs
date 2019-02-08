@@ -28,7 +28,8 @@ vector<string> split(string content, string delim); //declare split, used to spl
 vector<string> instruction_parser(string instruct); //declare instruction_parser, parses instructions and updates map
 bool contains(vector<string> vec, string content); // declare contains, that checks if a vector contains an element
 void manipulate(vector<string> in); //method to call other methods so main isnt repetative
-int fileNumber = 0;
+int fileNumber = 0;//keep track of file number
+string line = "_______________________________________________________________________________________________________________________________________";
 
 const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };
 map<string, string, CustomOrder> stateMap;
@@ -312,6 +313,7 @@ void manipulate(vector<string> in) {
 	}
 
 	printf("Simulation Ends \n");
+	cout << line << endl;
 	printf("\n");
 
 	stateMap.clear(); // Clear out statemap for next input file
