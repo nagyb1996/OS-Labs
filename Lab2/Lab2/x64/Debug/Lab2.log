@@ -1,5 +1,1 @@
-﻿  Lab2.cpp
-c:\users\brody\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(174): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\brody\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(178): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\brody\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(270): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-  Lab2.vcxproj -> C:\Users\Brody\Documents\Git_Projects\Operating-Systems\OS-Labs\Lab2\x64\Debug\Lab2.exe
+﻿  Lab2.vcxproj -> C:\Users\nagyb\Documents\Git_Projects\Operating-Systems\OS-Labs\Lab2\x64\Debug\Lab2.exe

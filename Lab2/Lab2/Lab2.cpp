@@ -17,7 +17,6 @@ struct CustomOrder {
 		string bLessP = b;
 
 		aLessP = aLessP.erase(0, 1);	//remove the P from process ID
-
 		bLessP = bLessP.erase(0, 1);
 
 		return stoi(aLessP) < stoi(bLessP);	//cast string to int and compare
@@ -31,8 +30,8 @@ void manipulate(vector<string> in); //method to call other methods so main isnt 
 int fileNumber = 0;//keep track of file number
 string line = "_______________________________________________________________________________________________________________________________________";
 
-const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };
-map<string, string, CustomOrder> stateMap;
+const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };//array of possible commands
+map<string, string, CustomOrder> stateMap;	//instantiate map
 
 vector<string> instruction_parser(string instruct) {
 
@@ -44,7 +43,7 @@ vector<string> instruction_parser(string instruct) {
 	map<string, string>::iterator it3;
 	for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
 		if (it3->second == "Exit") {
-			psToDelete.push_back(it3->first);
+			psToDelete.push_back(it3->first); //add exiting processes to vector to be deleted 
 		}
 	}
 
