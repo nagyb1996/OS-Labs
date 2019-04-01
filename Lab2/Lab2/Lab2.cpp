@@ -1,4 +1,3 @@
-
 #include "pch.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -24,20 +23,26 @@ struct CustomOrder {
 };
 
 vector<string> split(string content, string delim); //declare split, used to split string based on arguement defined delim
-vector<string> instruction_parser(string instruct); //declare instruction_parser, parses instructions and updates map
+vector<string> instruction_parser(string instruct, int percent, int numProc); //declare instruction_parser, parses instructions and updates map
 bool contains(vector<string> vec, string content); // declare contains, that checks if a vector contains an element
-void manipulate(vector<string> in); //method to call other methods so main isnt repetative
+void manipulate(vector<string> in, int percent, int numProc); //method to call other methods so main isnt repetative
 int fileNumber = 0;//keep track of file number
 string line = "_______________________________________________________________________________________________________________________________________";
 
 const string instructionCommands[8] = { "dispatched", "requests", "swapped in", "swapped out", "interrupt", " terminated", "expires" };//array of possible commands
 map<string, string, CustomOrder> stateMap;	//instantiate map
 
-vector<string> instruction_parser(string instruct) {
+int latency = 0;
+int memorySize = 20;
+
+vector<string> instruction_parser(string instruct, int percent, int numProc) {
+
+	int blockThreshold = percent * memorySize / 100;
 
 	vector<string> instructVector = {};			//new string vector, holds supplied instructions
 	vector<string> processes = {};                 //accumulate the list of modified processes
 	vector<string> psToDelete = {};			//vector to collect list of exiting processes for removal
+	int flagExit = 70;
 
 	//Checked map for an exiting processes, add them to vector for removal
 	map<string, string>::iterator it3;
@@ -48,7 +53,7 @@ vector<string> instruction_parser(string instruct) {
 	}
 
 	//Check for special conditions, only run for input 3 and 4
-	if (fileNumber == 3 || fileNumber == 4)
+	if (fileNumber == 1 || fileNumber == 2)
 	{
 		int blockedCounter = 0;
 		int flagBlocked = 0;
@@ -57,95 +62,111 @@ vector<string> instruction_parser(string instruct) {
 		// count how many processes are blocked
 		map<string, string>::iterator it3;
 		for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
-			if (it3->second == "Blocked" || it3->second == "Blocked/Suspend" || it3->second == "New") {
+			if (it3->second == "Blocked") {
 				blockedCounter++;
 			}
 		}
 
-		// If all processes are either blocked ||blocked/suspend || new
-		if (blockedCounter == stateMap.size()) {
+		// If blocked processes exceed specified percent
+		if (blockedCounter >= blockThreshold) {
 			for (auto it3 = stateMap.rbegin(); it3 != stateMap.rend(); it3++) {
 				if (it3->second == "Blocked") {
 					stateMap[it3->first] = "Blocked/Suspend";
 					processes.push_back(it3->first);
-					cout << "Swapped " << it3->first << " out to make room for New Process" << endl;
+					cout << "Swapped " << it3->first << " out because blocked processes exceed specified percent" << endl;
+					latency++;
 					break;
 				}
 
-
 			}
 
-			for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
-				if (it3->second == "New") {
-					stateMap[it3->first] = "Ready";
-					processes.push_back(it3->first);
-					cout << "Added " << it3->first << " to main memory to fill space" << endl;
-					flagBlocked = 1;
-					break;
-				}
-				if (flagBlocked == 0) {
-					flagBlocked = 2;
+			if (numProc == 2) {
+				for (auto it3 = stateMap.rbegin(); it3 != stateMap.rend(); it3++) {
+					if (it3->second == "Blocked") {
+						stateMap[it3->first] = "Blocked/Suspend";
+						processes.push_back(it3->first);
+						cout << "Swapped " << it3->first << " out to make room for New Process" << endl;
+						latency++;
+						break;
+					}
+
 				}
 			}
-
 		}
 
-
-		// Do initial map state checks for exited process
-		//map<string, string>::iterator it2;
 		for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
-			if (it3->second == "Exit") {
-				psToDelete.push_back(it3->first);
-				cout << it3->first << " Exits" << endl;
-				flagExit = 1;
+			if (it3->second == "New") {
+				stateMap[it3->first] = "Ready";
+				processes.push_back(it3->first);
+				cout << "Added " << it3->first << " to main memory to fill space" << endl;
+				flagBlocked = 1;
+				break;
+			}
+			if (flagBlocked == 0) {
+				flagBlocked = 2;
+			}
+		}
+
+	}
+
+
+	// Do initial map state checks for exited process
+	//map<string, string>::iterator it2;
+	for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+		if (it3->second == "Exit") {
+			psToDelete.push_back(it3->first);
+			cout << it3->first << " Exits" << endl;
+			flagExit = 1;
+			break;
+		}
+	}
+
+	if (flagExit == 1) {
+		for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+			if (it3->second == "New") {
+				stateMap[it3->first] = "Ready";
+				processes.push_back(it3->first);
+				cout << "Added " << it3->first << " to main memory to fill space" << endl;
+				flagExit = 0;
 				break;
 			}
 		}
 
 		if (flagExit == 1) {
-			for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
-				if (it3->second == "New") {
-					stateMap[it3->first] = "Ready";
-					processes.push_back(it3->first);
-					cout << "Added " << it3->first << " to main memory to fill space" << endl;
-					flagExit = 0;
-					break;
-				}
-			}
+			flagExit = 2;
+		}
+	}
 
-			if (flagExit == 1) {
-				flagExit = 2;
+
+
+	if (flagExit == 2) {
+		for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
+			if (it3->second == "Ready/Suspend") {
+				stateMap[it3->first] = "Ready";
+				processes.push_back(it3->first);
+				cout << "Swapped " << it3->first << " in to fill space from exited process" << endl;
+				flagExit = 0;
+				break;
 			}
 		}
-
-
-
-		if (flagExit == 2) {
-			for (it3 = stateMap.begin(); it3 != stateMap.end(); it3++) {
-				if (it3->second == "Ready/Suspend") {
-					stateMap[it3->first] = "Ready";
-					processes.push_back(it3->first);
-					cout << "Swapped " << it3->first << " in to fill space from exited process" << endl;
-					flagExit = 0;
-					break;
-				}
-			}
-
-		}
-
-		if (flagExit == 2) {
-			for (auto it3 = stateMap.rbegin(); it3 != stateMap.rend(); it3++) {
-				if (it3->second == "Block/Suspend") {
-					stateMap[it3->first] = "Block";
-					processes.push_back(it3->first);
-					cout << "Swapped " << it3->first << " in to fill space from exited process" << endl;
-					break;
-				}
-			}
-		}
-
 
 	}
+
+	if (flagExit == 2) {
+		for (auto it3 = stateMap.rbegin(); it3 != stateMap.rend(); it3++) {
+			if (it3->second == "Block/Suspend") {
+				stateMap[it3->first] = "Block";
+				processes.push_back(it3->first);
+				cout << "Swapped " << it3->first << " in to fill space from exited process" << endl;
+				break;
+			}
+		}
+	}
+
+
+
+
+
 
 	//Delete exiting processes
 	for (int c = 0; c < psToDelete.size(); c++) {
@@ -276,7 +297,7 @@ vector<string> split(string content, string delim) {
 	return inits;
 }
 
-void manipulate(vector<string> in) {
+void manipulate(vector<string> in, int percent, int numProc) {
 
 	//print initial state
 	cout << in[0] << endl;
@@ -296,7 +317,7 @@ void manipulate(vector<string> in) {
 	//send each individual line to the line parser
 	for (int j = 1; j < in.size(); j++) {
 		cout << in[j] << endl; //print the original line
-		vector<string> processes = instruction_parser(in[j]); //returns the modified processes from that line
+		vector<string> processes = instruction_parser(in[j], percent, numProc); //returns the modified processes from that line
 
 		//print map
 		map<string, string>::iterator it1;
@@ -319,6 +340,57 @@ void manipulate(vector<string> in) {
 }
 
 int main() {
+
+	int percent;
+	int numProc;
+	bool valid = false;
+
+	while (!valid) {
+		printf("Please select the percantage at which Processes are swapped out: \n");
+		printf("Enter 80 for 80% \nEnter 90 for 90% \nEnter 100 for 100% \n");
+		cin >> percent;
+
+		if (percent == 80) {
+
+			valid = true;
+		}
+
+		else if (percent == 90) {
+
+			valid = true;
+		}
+
+		else if (percent == 100) {
+
+			valid = true;
+		}
+
+		else {
+			printf("You have not selected a valid option please try again! \n");
+		}
+	}
+
+	while (valid) {
+		printf("Please select the number of Processes to swap: \n");
+		printf("Enter 1 for 1 Process at a time \n Enter 2 for 2 Processes at a time \n");
+		cin >> numProc;
+
+		if (numProc == 1) {
+
+			valid = false;
+		}
+
+		else if (numProc == 2) {
+
+			valid = false;
+		}
+
+		else {
+			printf("You have not selected a valid option please try again! \n");
+		}
+	}
+
+	printf("Running Simulation with the following perameters: \n Blocked Percent Threshold = %d% \n Number of Processes to swap at once: %d \n", percent, numProc);
 
 	printf("Simulation Begins \n");
 	printf("Reading Input 1 \n");
@@ -343,80 +415,80 @@ int main() {
 	}
 	input.close();
 
-	manipulate(in);
+	manipulate(in, percent, numProc);
 
-	printf("Simulation Begins \n");
-	printf("Reading Input 2 \n");
-	cout << "\n";
-	printf("Initial State \n");
+	//printf("Simulation Begins \n");
+	//printf("Reading Input 2 \n");
+	//cout << "\n";
+	//printf("Initial State \n");
 
-	ifstream inputTwo("input2.txt");
+	//ifstream inputTwo("input2.txt");
 
-	fileNumber = 2;
-	data = {};
-	vector<string> in2;
+	//fileNumber = 2;
+	//data = {};
+	//vector<string> in2;
 
-	if (inputTwo.good())
-	{
-		while (getline(inputTwo, data)) //while there are lines to read, read them
-		{
-			in2.push_back(data);		//store line
-			count++;				//increase counter
-		}
-		count = 0; //reset counter
-	}
+	//if (inputTwo.good())
+	//{
+	//	while (getline(inputTwo, data)) //while there are lines to read, read them
+	//	{
+	//		in2.push_back(data);		//store line
+	//		count++;				//increase counter
+	//	}
+	//	count = 0; //reset counter
+	//}
 
-	inputTwo.close();
+	//inputTwo.close();
 
-	manipulate(in2);
+	//manipulate(in2, percent, numProc);
 
-	printf("Simulation Begins \n");
-	printf("Reading Input 3 \n");
-	cout << "\n";
-	printf("Initial State \n");
+	//printf("Simulation Begins \n");
+	//printf("Reading Input 3 \n");
+	//cout << "\n";
+	//printf("Initial State \n");
 
 
-	ifstream inputThree("input3.txt");
+	//ifstream inputThree("input3.txt");
 
-	fileNumber = 3;
-	data = {};
-	vector<string> in3;
+	//fileNumber = 3;
+	//data = {};
+	//vector<string> in3;
 
-	if (inputThree.good())
-	{
-		while (getline(inputThree, data)) //while there are lines to read, read them
-		{
-			in3.push_back(data);		//store line
-			count++;				//increase counter
-		}
-		count = 0; //reset counter
-	}
-	inputThree.close();
+	//if (inputThree.good())
+	//{
+	//	while (getline(inputThree, data)) //while there are lines to read, read them
+	//	{
+	//		in3.push_back(data);		//store line
+	//		count++;				//increase counter
+	//	}
+	//	count = 0; //reset counter
+	//}
+	//inputThree.close();
 
-	manipulate(in3);
+	//manipulate(in3, percent, numProc);
 
-	printf("Simulation Begins \n");
-	printf("Reading Input 4 \n");
-	cout << "\n";
-	printf("Initial State \n");
+	//printf("Simulation Begins \n");
+	//printf("Reading Input 4 \n");
+	//cout << "\n";
+	//printf("Initial State \n");
 
-	ifstream inputFour("input4.txt");
+	//ifstream inputFour("input4.txt");
 
-	fileNumber = 4;
-	data = {};
-	vector<string> in4;
+	//fileNumber = 4;
+	//data = {};
+	//vector<string> in4;
 
-	if (inputFour.good())
-	{
-		while (getline(inputFour, data)) //while there are lines to read, read them
-		{
-			in4.push_back(data);		//store line
-			count++;				//increase counter
-		}
-		count = 0; //reset counter
-	}
-	inputFour.close();
+	//if (inputFour.good())
+	//{
+	//	while (getline(inputFour, data)) //while there are lines to read, read them
+	//	{
+	//		in4.push_back(data);		//store line
+	//		count++;				//increase counter
+	//	}
+	//	count = 0; //reset counter
+	//}
+	//inputFour.close();
 
-	manipulate(in4);
+	//manipulate(in4, percent, numProc);
 
 }

@@ -1,6 +1,8 @@
 ﻿  Lab2.cpp
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(173): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(177): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(269): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-  LINK : C:\Users\nagyb\Documents\Git_Projects\Operating-Systems\OS-Labs\Lab2\x64\Debug\Lab2.exe not found or not built by the last incremental link; performing full link
+c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(194): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(198): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(290): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(350): warning C4476: 'printf' : unknown type field character '\n' in format specifier
+c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(350): warning C4778: 'printf' : unterminated format string '% \n'
+c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(393): warning C4476: 'printf' : unknown type field character '\n' in format specifier
   Lab2.vcxproj -> C:\Users\nagyb\Documents\Git_Projects\Operating-Systems\OS-Labs\Lab2\x64\Debug\Lab2.exe
