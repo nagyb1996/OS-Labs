@@ -42,7 +42,7 @@ vector<string> instruction_parser(string instruct, int percent, int numProc) {
 	vector<string> instructVector = {};			//new string vector, holds supplied instructions
 	vector<string> processes = {};                 //accumulate the list of modified processes
 	vector<string> psToDelete = {};			//vector to collect list of exiting processes for removal
-	int flagExit = 70;
+	int flagExit = 0;
 
 	//Checked map for an exiting processes, add them to vector for removal
 	map<string, string>::iterator it3;
@@ -57,7 +57,7 @@ vector<string> instruction_parser(string instruct, int percent, int numProc) {
 	{
 		int blockedCounter = 0;
 		int flagBlocked = 0;
-		int flagExit = 0;
+		//int flagExit = 0;
 
 		// count how many processes are blocked
 		map<string, string>::iterator it3;
@@ -100,6 +100,7 @@ vector<string> instruction_parser(string instruct, int percent, int numProc) {
 				processes.push_back(it3->first);
 				cout << "Added " << it3->first << " to main memory to fill space" << endl;
 				flagBlocked = 1;
+				latency++;
 				break;
 			}
 			if (flagBlocked == 0) {
