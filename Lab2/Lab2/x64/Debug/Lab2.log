@@ -1,8 +1,1 @@
-﻿  Lab2.cpp
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(195): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(199): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(291): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(351): warning C4476: 'printf' : unknown type field character '\n' in format specifier
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(351): warning C4778: 'printf' : unterminated format string '% \n'
-c:\users\nagyb\documents\git_projects\operating-systems\os-labs\lab2\lab2\lab2.cpp(394): warning C4476: 'printf' : unknown type field character '\n' in format specifier
-  Lab2.vcxproj -> C:\Users\nagyb\Documents\Git_Projects\Operating-Systems\OS-Labs\Lab2\x64\Debug\Lab2.exe
+﻿  Lab2.vcxproj -> C:\Users\Brody\Documents\Git_Projects\Operating-Systems\OS-Labs\Lab2\x64\Debug\Lab2.exe

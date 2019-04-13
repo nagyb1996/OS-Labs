@@ -53,7 +53,7 @@ vector<string> instruction_parser(string instruct, int percent, int numProc) {
 	}
 
 	//Check for special conditions, only run for input 3 and 4
-	if (fileNumber == 1 || fileNumber == 2)
+	if (fileNumber == 1)
 	{
 		int blockedCounter = 0;
 		int flagBlocked = 0;
@@ -419,79 +419,5 @@ int main() {
 	manipulate(in, percent, numProc);
 
 	printf("\nTotal Latency: %d \n", latency);
-
-	//printf("Simulation Begins \n");
-	//printf("Reading Input 2 \n");
-	//cout << "\n";
-	//printf("Initial State \n");
-
-	//ifstream inputTwo("input2.txt");
-
-	//fileNumber = 2;
-	//data = {};
-	//vector<string> in2;
-
-	//if (inputTwo.good())
-	//{
-	//	while (getline(inputTwo, data)) //while there are lines to read, read them
-	//	{
-	//		in2.push_back(data);		//store line
-	//		count++;				//increase counter
-	//	}
-	//	count = 0; //reset counter
-	//}
-
-	//inputTwo.close();
-
-	//manipulate(in2, percent, numProc);
-
-	//printf("Simulation Begins \n");
-	//printf("Reading Input 3 \n");
-	//cout << "\n";
-	//printf("Initial State \n");
-
-
-	//ifstream inputThree("input3.txt");
-
-	//fileNumber = 3;
-	//data = {};
-	//vector<string> in3;
-
-	//if (inputThree.good())
-	//{
-	//	while (getline(inputThree, data)) //while there are lines to read, read them
-	//	{
-	//		in3.push_back(data);		//store line
-	//		count++;				//increase counter
-	//	}
-	//	count = 0; //reset counter
-	//}
-	//inputThree.close();
-
-	//manipulate(in3, percent, numProc);
-
-	//printf("Simulation Begins \n");
-	//printf("Reading Input 4 \n");
-	//cout << "\n";
-	//printf("Initial State \n");
-
-	//ifstream inputFour("input4.txt");
-
-	//fileNumber = 4;
-	//data = {};
-	//vector<string> in4;
-
-	//if (inputFour.good())
-	//{
-	//	while (getline(inputFour, data)) //while there are lines to read, read them
-	//	{
-	//		in4.push_back(data);		//store line
-	//		count++;				//increase counter
-	//	}
-	//	count = 0; //reset counter
-	//}
-	//inputFour.close();
-
-	//manipulate(in4, percent, numProc);
 
 }
