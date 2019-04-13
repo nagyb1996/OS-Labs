@@ -373,7 +373,7 @@ int main() {
 
 	while (valid) {
 		printf("Please select the number of Processes to swap: \n");
-		printf("Enter 1 for 1 Process at a time \n Enter 2 for 2 Processes at a time \n");
+		printf("Enter 1 for 1 Process at a time \nEnter 2 for 2 Processes at a time \n");
 		cin >> numProc;
 
 		if (numProc == 1) {
@@ -417,6 +417,8 @@ int main() {
 	input.close();
 
 	manipulate(in, percent, numProc);
+
+	printf("\nTotal Latency: %d \n", latency);
 
 	//printf("Simulation Begins \n");
 	//printf("Reading Input 2 \n");
