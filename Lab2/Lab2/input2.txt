@@ -1,9 +1,15 @@
-P1 Ready P2 Ready P5 Running P6 Blocked P7 New P9 Ready P11 Blocked P12 Ready P15 Blocked P20 Ready
-At time 5:  Time slice for P5 expires; P9 is dispatched.
-At time 15: P9 requests the disk; P1 is dispatched; P15 is swapped out; P20 is swapped out.
-At time 18: An interrupt occurred for P6; P11 is swapped out.
-At time 20: An interrupt occurred for P11; P15 is swapped in.
-At time 24: P1 requests the printer; P6 is dispatched.
-At time 28: Time slice for P6 expires; P2 is dispatched.
-At time 33: P2 is terminated; An interrupt occurred for P9.
-At time 36: P11 is swapped in; P5 is terminated; P6 is dispatched.
+P1 Ready P2 Ready P3 Ready P4 Running P5 Ready P6 Blocked P7 Blocked/Suspend P8 Blocked/Suspend P9 Ready/Suspend P10 Ready/Suspend P11 Blocked P12 Blocked P13 Ready/Suspend P14 Blocked P15 Blocked P16 Blocked P17 Blocked P18 Blocked P19 Blocked P20 Blocked P21 Blocked P22 Blocked P23 Blocked P24 Blocked P25 Blocked P26 Blocked P27 Blocked
+At time 5:  P4 requests the disk; P2 is dispatched.
+At time 10: An interrupt occurred for P7.
+At time 15: Time slice for P2 expires; P5 is dispatched;
+At time 18: P5 requests the keyboard; P3 is dispatched.
+At time 20: P3 requests the disk; P1 is dispatched;
+At time 24: P1 requests the printer; P2 is dispatched.
+At time 28: P2 requests the keyboard; P6 is dispatched.
+At time 30: An interrupt occurred for P3.
+At time 33: P6 is terminated. P3 is dispatched.
+At time 36: An interrupt occurred for P5.
+At time 38: An interrupt occurred for P4.
+At time 40: P3 requests the disk; P4 is dispatched;
+At time 44: P4 is terminated; P5 is dispatched.
+At time 48: An interrupt occurred for P2.

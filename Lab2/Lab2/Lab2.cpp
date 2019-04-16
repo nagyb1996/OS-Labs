@@ -52,8 +52,8 @@ vector<string> instruction_parser(string instruct, int percent, int numProc) {
 		}
 	}
 
-	//Check for special conditions, only run for input 3 and 4
-	if (fileNumber == 1)
+	// do the special stuff for assignment 4
+	if (fileNumber == 1 || fileNumber == 2)
 	{
 		int blockedCounter = 0;
 		int flagBlocked = 0;
@@ -418,6 +418,38 @@ int main() {
 
 	manipulate(in, percent, numProc);
 
-	printf("\nTotal Latency: %d \n", latency);
+	int latency1 = latency;
+
+
+	printf("Simulation Begins \n");
+	printf("Reading Input 2 \n");
+	cout << "\n";
+	printf("Initial State \n");
+
+	ifstream input2("input2.txt");
+
+	fileNumber = 2;
+	count = 0;
+	in.clear();
+	data.clear();
+	latency = 0;
+
+	if (input2.good())
+	{
+		while (getline(input2, data)) //while there are lines to read, read them
+		{
+			in.push_back(data);		//store line
+			count++;				//increase counter
+		}
+		count = 0; //reset counter
+	}
+	input2.close();
+
+	manipulate(in, percent, numProc);
+
+	printf("\nTotal Latency for file 1: %d \n", latency1);
+
+	printf("\nTotal Latency for file 2: %d \n", latency);
+
 
 }
